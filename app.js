@@ -3,6 +3,7 @@ const app = express();
 const records = require('./records');
 
 // Actions that we want to enable:
+
 // Send a GET request to /quotes to READ a list of quotes
 app.get('/quotes', async (req, res) => {
     const quotes = await records.getQuotes();
@@ -10,7 +11,6 @@ app.get('/quotes', async (req, res) => {
 });
 
 // Send a GET request to /quotes/:id to READ(view) a quote
-
 app.get('/quotes/:id', async (req, res) => {
     const quote = await records.getQuote(req.params.id);
     res.json(quote);
@@ -19,6 +19,11 @@ app.get('/quotes/:id', async (req, res) => {
 // Send a POST request to /quotes/ to Create a quote
 // Send a PUT request to /quotes/:id to UPDATE(edit) a quote
 // Send a DELETE request to /quotes/:id to DELETE a quote
+
 // Send a GET request to /quotes/quote/random to READ (view) a random quote
+app.get('/quotes/quote/random', async (req, res) => {
+    const quote = await records.getRandomQuote();
+    res.json(quote);
+});
 
 app.listen(3000, () => console.log('Quote API listening on port 3000!'));
