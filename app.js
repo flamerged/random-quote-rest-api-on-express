@@ -7,12 +7,12 @@ app.use(express.json());
 // Actions that we want to enable:
 
 // Send a GET request to /quotes to READ a list of quotes
-app.get('/quotes', async (req, res) => {
+app.get('/quotes', async (req, res, next) => {
     try {
         const quotes = await records.getQuotes();
         res.json(quotes);
     } catch (err) {
-        res.json({ message: err.message });
+        next(err);
     }
 });
 
@@ -26,12 +26,12 @@ app.get('/quotes/:id', async (req, res) => {
             res.status(404).json({ message: "Quote wasn't found" });
         }
     } catch (err) {
-        res.json({ message: err.message }).status(500);
+        next(err);
     }
 });
 
 // Send a POST request to /quotes/ to Create a quote
-app.post('/quotes/', async (req, res) => {
+app.post('/quotes/', async (req, res, next) => {
     try {
         if (req.body.author && req.body.quote) {
             const quote = await records.createQuote({
@@ -43,11 +43,11 @@ app.post('/quotes/', async (req, res) => {
             res.status(400).json({ message: 'Quote and author required' });
         }
     } catch (err) {
-        res.json({ message: err.message });
+        next(err);
     }
 });
 // Send a PUT request to /quotes/:id to UPDATE(edit) a quote
-app.put('/quotes/:id', async (req, res) => {
+app.put('/quotes/:id', async (req, res, next) => {
     try {
         const quote = await records.getQuote(req.params.id);
         if (quote) {
@@ -60,12 +60,12 @@ app.put('/quotes/:id', async (req, res) => {
             res.status(404).json({ message: "Quote wasn't found" });
         }
     } catch (err) {
-        res.json({ message: err.message }).status(500);
+        next(err);
     }
 });
 // Send a DELETE request to /quotes/:id to DELETE a quote
 
-app.delete('/quotes/:id', async (req, res) => {
+app.delete('/quotes/:id', async (req, res, next) => {
     try {
         const quote = await records.getQuote(req.params.id);
         if (quote) {
@@ -75,7 +75,7 @@ app.delete('/quotes/:id', async (req, res) => {
             res.status(404).json({ message: "Quote wasn't found" });
         }
     } catch (err) {
-        res.json({ message: err.message }).status(500);
+        next(err);
     }
 });
 
@@ -87,6 +87,17 @@ app.get('/quotes/quote/random', async (req, res) => {
     } catch (err) {
         res.json({ message: err.message });
     }
+});
+
+app.use((req, res, next) => {
+    const err = new Error('Not Found');
+    err.status = 404;
+    next(err);
+});
+
+app.use((err, req, res, next) => {
+    res.status(err.status || 500);
+    res.json({ error: err.message });
 });
 
 app.listen(3000, () => console.log('Quote API listening on port 3000!'));
